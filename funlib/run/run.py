@@ -60,6 +60,14 @@ p.add('-d', '--mount_dirs', required=False,
       help="Directories to mount in container.",
       default="")
 
+p.add('--std_out', required=False,
+      help="A path for piping std_out in case of batch job",
+      default="%J.log")
+
+p.add('--std_err', required=False,
+      help="A path for piping std_err in case of batch job",
+      default="%J.log")
+
 
 def run(command,
         num_cpus=5,
@@ -73,7 +81,9 @@ def run(command,
         batch=False,
         mount_dirs=[],
         execute=False,
-        expand=True):
+        expand=True,
+        std_out="%J.log",
+        std_err="%J.log"):
 
     if not singularity_image or singularity_image == "None":
         container_info = ""
@@ -101,7 +111,7 @@ def run(command,
     if not batch:
         submit_cmd = 'bsub -I -R "affinity[core(1)]"'
     else:
-        submit_cmd = 'bsub -o %J.log -K -R "affinity[core(1)]"'
+        submit_cmd = f'bsub -o {std_out} -e {std_err} -K -R "affinity[core(1)]"'
 
     if num_gpus <= 0:
         use_gpus = ""
@@ -150,6 +160,8 @@ if __name__ == "__main__":
     batch = bool(options.batch)
     mount_dirs = list(options.mount_dirs.split(","))
     execute = True
+    std_out = options.std_out
+    std_err = options.std_err
 
     run(command,
         num_cpus,
@@ -162,4 +174,6 @@ if __name__ == "__main__":
         environment_variable,
         batch,
         mount_dirs,
-        execute)
+        execute,
+        std_out,
+        std_err)
