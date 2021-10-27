@@ -114,9 +114,9 @@ def run(command,
         log_file=None,
         error_file=None,
         flags=None):
-    ''' If execute, returns the jobid, or the job name if the jobid cannot
-    be found in stdout. if not execute, returns the assembled bsub
-    command as a string (if expand) or a list of strings (if not expand)'''
+    '''If execute, returns the job name. If not execute, returns the assembled
+    bsub command as a string (if expand) or a list of strings (if not
+    expand)'''
 
     if not singularity_image or singularity_image == "None":
         comment = ""
@@ -195,19 +195,8 @@ def run(command,
             return ' '.join(run_command)
     else:
         run_command = ' '.join(run_command)
-        output = sp.run(
-                run_command,
-                shell=True,
-                stdout=sp.PIPE,
-                encoding='UTF-8')
-        logger.debug("Command output: %s" % output)
-        print(output.stdout)
-        match = bsub_stdout_regex.match(output.stdout)
-        if not match:
-            logger.warn("Could not get jobid: returning job name")
-            return job_name
-        jobid = match.group(1)
-        return jobid
+        sp.run(run_command, shell=True)
+        return job_name
 
 
 if __name__ == "__main__":
